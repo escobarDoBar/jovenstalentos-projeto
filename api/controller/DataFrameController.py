@@ -9,8 +9,18 @@ class DataFrameController(Controller):
 	df: pd.DataFrame = None
 	''' DataFrame. '''
 
+	lst_tbs: list = None
+	''' Lista de DataFrames derivados do principal. '''
+
 	pth_csv: str = 'db/anac.csv'
 	''' Caminho do CSV. '''
+
+	def __init__(self, api):
+		''' Constructo. '''
+		# Chama a herança.
+		super().__init__(api)
+		# Inicializa variáveis.
+		self.lst_tbs = []
 
 	def criarRotas(self, api):
 
@@ -49,3 +59,8 @@ class DataFrameController(Controller):
 			Quantas linhas serão retornadas.
 			'''
 			return self.df.tail(linhas).to_json(orient='records')
+		
+		@api.get('/dataframe/ajustar')
+		def ajustarDF():
+			''' Ajusta o DataFrame. '''
+			
