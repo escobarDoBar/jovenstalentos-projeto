@@ -1,7 +1,7 @@
 from .controller import Controller
 
 
-class ControllerPrincipal(Controller):
+class MainController(Controller):
 	''' Controlador principal. '''
 
 	def criarRotas(self, api):

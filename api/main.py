@@ -1,13 +1,15 @@
 from fastapi import FastAPI
 from rich import print
 
-from api.controller import ControllerPrincipal
+from api.controller import MainController
+from api.controller import DataFrameController
 
 class api(FastAPI):
 	''' Classe da API. '''
 
-	ctrl_principal = None
+	ctrl_principal: MainController = None
 	''' Controladora principal. Provê funções básicas. '''
+	ctrl_DataFrame: DataFrameController = None
 
 	def __init__(self):
 		''' Constructo. '''
@@ -16,5 +18,6 @@ class api(FastAPI):
 		# Controladoras.
 		# Envia o self junto para conseguir criar as rotas.
 		print('[cyan][*][/cyan] Inicializando controladoras...')
-		self.ctrl_principal = ControllerPrincipal(self)
+		self.ctrl_principal = MainController(self)
+		self.ctrl_DataFrame = DataFrameController(self)
 		print('[cyan][*][/cyan] Controladoras inicializadas.')
