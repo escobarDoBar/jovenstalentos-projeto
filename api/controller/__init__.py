@@ -1,2 +1,5 @@
 from api.controller.MainController import MainController
 from api.controller.DataFrameController import DataFrameController
+from api.controller.VooController import VooController
+from api.controller.AeroportoController import AeroportoController
+from api.controller.EmpresaController import EmpresaController
