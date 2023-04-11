@@ -20,8 +20,11 @@ class VooController(DataFrameController):
 		def chamarGetVoos(qnt_exibir: int = 0):
 			return self.getVoos(api, qnt_exibir)
 		@api.get('/voo/tipos')
-		def chamarGetTipoVoo(qnt_exibir: int = 0):
-			return self.getTipoVoo(api, qnt_exibir)
+		def chamarGetTipoVoo(tp_voo: str = '', qnt_exibir: int = 0):
+			return self.getTipoVoo(api, tp_voo, qnt_exibir)
+		@api.get('/voo/peso')
+		def chamarGetPesoVoo(id_voo: int):
+			return self.getPesoVoo(id_voo)
 
 	def __getMerged(self, api):
 		''' Retorna um DataFrame dos voos com Joins aplicados. 
@@ -102,11 +105,16 @@ class VooController(DataFrameController):
 			return self.head(join_df, qnt_exibir)
 		return join_df.to_json(orient='records')
 	
-	def getTipoVoo(self, api, qnt_exibir: int = 0):
+	def getTipoVoo(self, api, tp_voo: str = '', qnt_exibir: int = 0):
 		''' Retorna a origem, destino e empresa do voo, junto com o seu tipo.
 		@params
 		api: FastAPI
 		Carrega o objeto da API, utilizo para acessar outros DataFrames.
+		tp_voo: str = ''
+		Natureza do voo.
+		'' = Indefinido (sem filtro)
+		'd' ou 'd' = DOMÉSTICA
+		'i' ou 'I' = INTERNACIONAL
 		qnt_exibir: int = None
 		Quantos voos serão exibidos.
 		0: Desativa o limite;
@@ -114,6 +122,14 @@ class VooController(DataFrameController):
 		'''
 		# Define o JOIN.
 		join_df: pd.DataFrame = self.__getMerged(api)
+
+		# Se houver filtro.
+		if tp_voo:
+			tp_voo = tp_voo.lower()
+			if tp_voo == 'i':
+				join_df = join_df[ join_df.natureza == 'INTERNACIONAL' ]
+			elif tp_voo == 'd':
+				join_df = join_df[ join_df.natureza == 'DOMÉSTICA' ]
 
 		# Salva só as colunas desejadas.
 		join_df = join_df[ [ 'id_voo', 'ano', 'mes', 'natureza', 'grupo_de_voo', 'origem_sigla', 'destino_sigla', 'empresa_sigla' ]]
@@ -125,4 +141,21 @@ class VooController(DataFrameController):
 		if qnt_exibir:
 			return self.head(join_df, qnt_exibir)
 		return join_df.to_json(orient='records')
+	
+	def getPesoVoo(self, id_voo: int):
+		''' Retorna o peso de carga do voo. '''
+		# Cria o DF filtrado.
+		df_filtro: pd.DataFrame = self.df[ self.df.id_voo == id_voo ].fillna(0) # Fillna para substituir NaN por 0
+
+		# Cria um DataFrame temporário.
+		temp_df: pd.DataFrame = df_filtro[ [ 'id_voo', 'mes', 'ano', 'natureza' ] ]
+
+		# Soma os pesos da carga.
+		temp_df['carga_total'] = df_filtro['carga_paga_kg'] + df_filtro['carga_gratis_kg'] + df_filtro['correio_kg'] + df_filtro['bagagem_kg']
+
+		#DEBUG.
+		print(temp_df.head())
+
+		# Retorno.
+		return temp_df.to_json(orient='records')
 		
